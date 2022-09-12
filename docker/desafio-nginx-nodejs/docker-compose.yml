@@ -1,0 +1,41 @@
+version: "3"
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: db
+    restart: always
+    volumes:
+      - data:/var/lib/mysql
+      - ./mysql/schema.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - MYSQL_DATABASE=nodedb
+      - MYSQL_ROOT_PASSWORD=root
+    networks:
+      - app-network
+
+  app:
+    build:
+      context: ./node-app
+    container_name: app
+    entrypoint: dockerize -wait tcp://db:3306 -timeout 20s node src/index.js
+    networks:
+      - app-network
+    depends_on:
+      - db
+
+  reverse-proxy:
+    build: ./reverse-proxy
+    container_name: reverse-proxy
+    networks:
+      - app-network
+    ports:
+      - "8080:80"
+    depends_on:
+      - app
+
+networks:
+  app-network:
+
+volumes:
+  data:
