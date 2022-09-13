@@ -2,8 +2,8 @@ FROM node:14-alpine AS builder
 WORKDIR /usr/src/app
 COPY package.json ./
 COPY yarn.lock ./
-COPY src src
 RUN yarn
+COPY . /usr/src/app
 
 FROM node:14-alpine
 
